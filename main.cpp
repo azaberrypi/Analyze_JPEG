@@ -229,8 +229,9 @@ int main(int argc, char *argv[]) {
     };
 
     puts("-------------------------------");
-
     printf("\n");
+
+
     /*Make URL of Google Map*/
     printf("https://www.google.com/maps?q=%2.6f,%3.6f\n",
            (float) gps_latitude[0] + (float) gps_latitude[1] / 60 + (float) gps_latitude[2] / 3600,
@@ -239,6 +240,18 @@ int main(int argc, char *argv[]) {
     printf("https://www.google.com/maps/place/%d%%C2%%B0%d'%d\"%c+%d%%C2%%B0%d'%d\"%c\n", gps_latitude_dms[0],
            gps_latitude_dms[1], gps_latitude_dms[2], latitude_ref,
            gps_longitude_dms[0], gps_longitude_dms[1], gps_longitude_dms[2], longitude_ref);
+
+    printf("\n");
+
+
+    /*Open browser automatically*/  //todo : discriminate OS and make several move
+    char google_map_url[300];
+    sprintf(google_map_url, "rundll32.exe url.dll,FileProtocolHandler https://www.google.com/maps?q=%2.6f,%3.6f",
+            (float) gps_latitude[0] + (float) gps_latitude[1] / 60 + (float) gps_latitude[2] / 3600,
+            (float) gps_longitude[0] + (float) gps_longitude[1] / 60 + (float) gps_longitude[2] / 3600);
+
+    printf("execute command : %s\n", google_map_url);
+    system(google_map_url);
 
 
     fclose(fp);
