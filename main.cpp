@@ -3,8 +3,6 @@
 #include <cstdint>
 #include <iostream>
 
-#define gps_byte 256
-
 uint32_t binary_to_sequence(const uint8_t *str, int big_endian, uintptr_t first_address, int offset) {
     uint32_t sequence = 0;
     uint32_t last_address = first_address + offset;
