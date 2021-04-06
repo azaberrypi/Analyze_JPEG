@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <iostream>
 
-uint32_t binary_to_sequence(const uint8_t *str, int big_endian, uintptr_t first_address, int offset) {
+uint32_t binary_to_sequence(const uint8_t *str, int big_endian, uintptr_t first_address, uint8_t offset) {
     uint32_t sequence = 0;
     uint32_t last_address = first_address + offset;
 
@@ -21,7 +21,8 @@ uint32_t binary_to_sequence(const uint8_t *str, int big_endian, uintptr_t first_
     return sequence;
 }
 
-uint16_t get_IFD_type(uint32_t sequence) {
+
+uint16_t get_ifd_type(uint32_t sequence) {
     switch (sequence) {
         case 1:
             //BYTE
@@ -53,6 +54,30 @@ uint16_t get_IFD_type(uint32_t sequence) {
     }
 }
 
+
+uint8_t
+search_tag_and_return_offset(const uint8_t *str, int big_endian, uint16_t cnt, uint16_t tag, uint8_t number_of_entry) {
+    uint8_t offset;
+    uint16_t tag_top = tag >> 8;
+    uint16_t tag_bottom = tag - (tag_top << 8);
+
+    do {
+        if (str[cnt] == tag_top && str[cnt + 1] == tag_bottom && big_endian == 1) {
+            offset = cnt;
+            return offset;
+        } else if (str[cnt] == tag_bottom && str[cnt + 1] == tag_top &&
+                   big_endian == 0) {     // I haven't check completely yet.
+            offset = cnt;
+            return offset;
+        }
+        cnt += 12;
+        number_of_entry--;
+    } while (number_of_entry != 0);
+
+    printf("tag : 0x%x doesn't exist!!\n", tag);
+    exit(1);
+}
+
 int main(int argc, char *argv[]) {
     using namespace std;
     FILE *fp;
@@ -67,7 +92,7 @@ int main(int argc, char *argv[]) {
     char *filename = argv[1];
     uint8_t buff[8192];
 
-    if ((fp = fopen(filename, "rb")) == NULL) {
+    if ((fp = fopen(filename, "rb")) == nullptr) {
         printf("%s couldn't be opened!!\n", filename);
         exit(1);
     }
@@ -87,7 +112,7 @@ int main(int argc, char *argv[]) {
 
     /*Verify endianness*/
     int big_endian = -1;
-    int tiff_header_offset = 0;
+    uint8_t tiff_header_offset = 0;
     for (cnt = 0; cnt < 20; cnt++) {
         if (buff[cnt] == 0x4d && buff[cnt + 1] == 0x4d) {
             big_endian = 1;
@@ -120,33 +145,21 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-
-    /*Get the 0th IFD's offset*/
-    int _0th_ifd_offset = binary_to_sequence(buff, big_endian, cnt, 4);
+    /*Get the 0th IFD offset*/
+    uint8_t _0th_ifd_offset = binary_to_sequence(buff, big_endian, cnt, 4);
     printf("0th IFD offset : 0x%x\n", _0th_ifd_offset);
 
-
     /*Get IFD offset*/
-    int ifd_offset = tiff_header_offset + _0th_ifd_offset;
+    uint16_t ifd_offset = tiff_header_offset + _0th_ifd_offset;
     printf("IFD offset : 0x%x\n", ifd_offset);
 
-
     /*Get the number of entry*/
-    int number_of_0th_ifd_entry = binary_to_sequence(buff, big_endian, ifd_offset, 2);
+    uint8_t number_of_0th_ifd_entry = binary_to_sequence(buff, big_endian, ifd_offset, 2);
     printf("number of 0th ifd entry : 0x%x\n", number_of_0th_ifd_entry);
     cnt = ifd_offset + 2;
 
-    uint8_t gps_ifd_offset = 0;
-
-    // todo : make function
-    do {
-        if (buff[cnt] == 0x88 && buff[cnt + 1] == 0x25) {
-            gps_ifd_offset = cnt;
-            break;
-        }
-        cnt += 12;
-        number_of_0th_ifd_entry--;
-    } while (number_of_0th_ifd_entry != 0);
+    uint8_t gps_ifd_offset = search_tag_and_return_offset(buff, big_endian, cnt, 0x8825, number_of_0th_ifd_entry);
+    printf("gps ifd offset : 0x%x\n", gps_ifd_offset);
 
     uint32_t gps_info_ifd_pointer = tiff_header_offset + binary_to_sequence(buff, big_endian, gps_ifd_offset + 8, 4);
 
@@ -187,7 +200,7 @@ int main(int argc, char *argv[]) {
         }
 
         //info
-        uint16_t ifd_type = get_IFD_type(binary_to_sequence(buff, big_endian, cnt + 2, 2));
+        uint16_t ifd_type = get_ifd_type(binary_to_sequence(buff, big_endian, cnt + 2, 2));
         uint16_t ifd_count = binary_to_sequence(buff, big_endian, cnt + 4, 4);
         printf("Type : 0x%X, Count : 0x%X\n\n", ifd_type, ifd_count);
         cnt += 12;
@@ -243,7 +256,7 @@ int main(int argc, char *argv[]) {
 
 
     /*Open browser automatically*/  //todo : discriminate OS and make several move
-    char google_map_url[300];
+    char google_map_url[300];       //todo : change from "char" to "char8_t"
     sprintf(google_map_url, "rundll32.exe url.dll,FileProtocolHandler https://www.google.com/maps?q=%2.6f,%3.6f",
             (float) gps_latitude[0] + (float) gps_latitude[1] / 60 + (float) gps_latitude[2] / 3600,
             (float) gps_longitude[0] + (float) gps_longitude[1] / 60 + (float) gps_longitude[2] / 3600);
