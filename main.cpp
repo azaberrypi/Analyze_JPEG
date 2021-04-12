@@ -3,7 +3,8 @@
 #include <cstdint>
 #include <iostream>
 
-typedef unsigned char char8_t;
+/*If compile error about char8_t is happened, use a below line.*/
+//typedef unsigned char char8_t;
 
 uint32_t binary_to_sequence(const uint8_t *str, int big_endian, uintptr_t first_address, uint8_t offset) {
     uint32_t sequence = 0;
@@ -14,7 +15,7 @@ uint32_t binary_to_sequence(const uint8_t *str, int big_endian, uintptr_t first_
             sequence <<= 8;
             sequence |= str[first_address++];
         }
-    } else {
+    } else {    // I haven't check completely yet.
         for (uint64_t cnt = 0; cnt < offset; cnt++) {
             sequence *= 256;
             sequence += str[last_address--];
@@ -80,6 +81,7 @@ search_tag_and_return_offset(const uint8_t *str, int big_endian, uint16_t cnt, u
     exit(1);
 }
 
+
 int main(int argc, char *argv[]) {
     using namespace std;
     FILE *fp;
@@ -90,6 +92,7 @@ int main(int argc, char *argv[]) {
         cerr << "Invalid arguments!!";
         exit(1);
     }
+    //char *filename = "C:\\Users\\aomid\\OneDrive\\Desktop\\DSC_0002.JPG";
     char *filename = argv[1];
     uint8_t buff[8192];
 
@@ -136,7 +139,6 @@ int main(int argc, char *argv[]) {
 
 
     /*Verify the type of TIFF*/
-    int cnt1 = cnt;     // kari
     if ((buff[cnt] == 0x00 && buff[cnt + 1] == 0x2A && big_endian) ||
         (buff[cnt] == 0x2A && buff[cnt + 1] == 0x00 && !big_endian)) {
         puts("This is TIFF file.");
@@ -146,8 +148,6 @@ int main(int argc, char *argv[]) {
         puts("Learn first about it!!");
         exit(1);
     }
-
-    printf("cnt ; 0x%x\n", cnt);
 
     /*Get the 0th IFD offset*/
     uint8_t _0th_ifd_offset = binary_to_sequence(buff, big_endian, cnt, 4);
@@ -283,8 +283,8 @@ int main(int argc, char *argv[]) {
            (float) gps_latitude[0] + (float) gps_latitude[1] / 60 + (float) gps_latitude[2] / 3600,
            (float) gps_longitude[0] + (float) gps_longitude[1] / 60 + (float) gps_longitude[2] / 3600);
 
-    printf("https://www.google.com/maps/place/%d%%C2%%B0%d'%d\"%c+%d%%C2%%B0%d'%d\"%c\n", gps_latitude_dms[0],
-           gps_latitude_dms[1], gps_latitude_dms[2], latitude_ref,
+    printf("https://www.google.com/maps/place/%d%%C2%%B0%d'%d\"%c+%d%%C2%%B0%d'%d\"%c\n",
+           gps_latitude_dms[0], gps_latitude_dms[1], gps_latitude_dms[2], latitude_ref,
            gps_longitude_dms[0], gps_longitude_dms[1], gps_longitude_dms[2], longitude_ref);
 
     printf("\n");
