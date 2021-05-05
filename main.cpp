@@ -15,7 +15,7 @@ uint32_t binary_to_sequence(const uint8_t *str, int big_endian, uintptr_t first_
             sequence <<= 8;
             sequence |= str[first_address++];
         }
-    } else {    // I haven't check completely yet.
+    } else {
         for (uint64_t cnt = 0; cnt < offset; cnt++) {
             sequence *= 256;
             sequence += str[last_address--];
@@ -68,8 +68,7 @@ search_tag_and_return_offset(const uint8_t *str, int big_endian, uint16_t cnt, u
         if (str[cnt] == tag_top && str[cnt + 1] == tag_bottom && big_endian) {
             offset = cnt;
             return offset;
-        } else if (str[cnt] == tag_bottom && str[cnt + 1] == tag_top &&
-                   !big_endian) {     // I haven't check completely yet.
+        } else if (str[cnt] == tag_bottom && str[cnt + 1] == tag_top && !big_endian) {
             offset = cnt;
             return offset;
         }
@@ -92,7 +91,7 @@ int main(int argc, char *argv[]) {
         cerr << "Invalid arguments!!";
         exit(1);
     }
-    //char *filename = "C:\\Users\\aomid\\OneDrive\\Desktop\\DSC_0002.JPG";
+
     char *filename = argv[1];
     uint8_t buff[8192];
 
@@ -144,8 +143,7 @@ int main(int argc, char *argv[]) {
         puts("This is TIFF file.");
         cnt += 2;
     } else {
-        puts("This is BigTIFF file.");
-        puts("Learn first about it!!");
+        puts("BigTIFF file isn't supported.");
         exit(1);
     }
 
