@@ -4,7 +4,7 @@ I know that this is "Reinventing the wheel".
 ## 概要
 大それた名前ですが、現状ではjpegからGPS情報（緯度経度）を取り出し、Google Mapのその地点をピン付きで表示するURLを生成するソフトウェアです。<br>
 Windows環境のみ、自動で既定のブラウザでGoogle Mapを開いて表示してくれます。<br>
-ほとんどをC言語で書いています。<br>
+C言語で書いています。<br>
 今後様々な楽しい機能を付け加えたりするかもしれません。
 
 ## 作ってみた感想等
